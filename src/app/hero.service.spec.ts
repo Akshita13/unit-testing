@@ -2,31 +2,103 @@ import { TestBed } from "@angular/core/testing";
 import { HeroService } from "./hero.service";
 import { MessageService } from "./message.service";
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpErrorResponse, HttpClient, HttpHeaders } from "@angular/common/http";
+import { Hero } from "./hero";
 
 
 describe('hero service', () => {
 
-    let mockMessageService;
+    //let mockMessageService;
     let httpTestingController: HttpTestingController;
-    let service: HeroService
+    let service: HeroService;
+    let expectedHeroes:Hero[];
+     let httpClient:HttpClient;
     beforeEach(() => {
-        mockMessageService = jasmine.createSpyObj(['add']);
+
+       
+       // mockMessageService = jasmine.createSpyObj(['add']);
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
             providers: [HeroService,
-                { provide: MessageService, useValue: mockMessageService }]
+            MessageService
+              ]
         });
 
         httpTestingController = TestBed.get(HttpTestingController);
         service = TestBed.get(HeroService);
+        httpClient = TestBed.get(HttpClient);
+        expectedHeroes = [
+            { id: 1, name: 'A' },
+            { id: 2, name: 'B' },
+           ] as Hero[];
     });
 
-    describe('getHero', () => {
-        it('should call get with correct url', () => {
-            service.getHero(3).subscribe();
-            const req = httpTestingController.expectOne('api/heroes/3');
-            req.flush({ id: 3, name: 'dsad', strength: 4 });
-            httpTestingController.verify();
+    describe('getHeroes', () => {
+       
+
+        
+        it('should call getHeroes once',()=>{
+            service.getHeroes().subscribe(
+                // heroes => expect(heroes).toEqual(expectedHeroes, 'should return expected heroes')
+                
+              );
+        
+              // HeroService should have made one request to GET heroes from expected URL
+              const req = httpTestingController.expectOne(service.heroesUrl);
+              expect(req.request.method).toEqual('GET');
+        
+              // Respond with the mock heroes
+              req.flush(expectedHeroes);
+            
         });
-    })
-})
+
+        it('should be OK returning no heroes',()=>{
+            service.getHeroes().subscribe(
+                heroes=>expect(heroes.length).toEqual(0,'should return empty array')
+            );
+
+            const req=httpTestingController.expectOne(service.heroesUrl);
+            req.flush([]);
+        })
+
+     
+        it('can test HttpClient.get with matching header', () => {
+            const testData: Hero[] = [{id:1,name: 'Test Data',strength:6}];
+        
+            // Make an HTTP GET request with specific header
+            httpClient.get<Hero[]>(service.heroesUrl, {
+                headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+              })
+              .subscribe(data =>
+                expect(data).toEqual(testData)
+              );
+        
+              // Find request with a predicate function.
+            // Expect one request with an authorization header
+            const req = httpTestingController.expectOne(
+              req => req.headers.has('Authorization')
+            );
+            req.flush(testData);
+          });
+
+
+        });
+
+        describe('gethero',()=>{
+             
+            it('should call get with correct url', () => {
+
+            service.getHero(2).subscribe(
+              //  heroes => expect(heroes).toEqual(expectedHeroes[1], 'should return expected heroes')
+            );
+            const req = httpTestingController.expectOne('api/heroes/2');
+            req.flush(expectedHeroes);
+            httpTestingController.verify();
+
+            });
+        })
+
+
+       
+    });
+
