@@ -1,11 +1,18 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { HeroesComponent } from "./heroes.component";
-import { NO_ERRORS_SCHEMA } from "@angular/core";
+import { NO_ERRORS_SCHEMA, Directive, Input } from "@angular/core";
 import { of } from "rxjs";
 import { HeroService } from "../hero.service";
 import { By } from "@angular/platform-browser";
 import { HeroComponent } from "../hero/hero.component";
 
+// @Directive({
+//     selector:['routerLink']
+// })
+
+// export class routerLinkDirectiveStub{
+//     @Input('routerLink') linkParams:any; 
+// }
 describe('heroes component',()=>{
 
     let fixture:ComponentFixture<HeroesComponent>
@@ -46,6 +53,10 @@ describe('heroes component',()=>{
 
     it('should call heroservice.deletehero method when hero component;s delete button is clicked',()=>{
         spyOn(fixture.componentInstance,'delete')
+
+        /**
+         * get sample data using mock
+         */
         mockHeroesService.getHeroes.and.returnValues(of(heroes));
         fixture.detectChanges();
 
@@ -53,6 +64,32 @@ describe('heroes component',()=>{
         heroComponent[0].query(By.css('button')).triggerEventHandler('click',{stopPropagation:()=>{}})
 
         expect(fixture.componentInstance.delete).toHaveBeenCalledWith(heroes[0]);
-    })
+    });
+
+    it('shoud add new hero to hero list when add button is clicked',()=>{
+
+        
+        /**
+         * get sample data using mock
+         */
+        mockHeroesService.getHeroes.and.returnValues(of(heroes));
+        fixture.detectChanges();
+
+
+        const name='abc';
+        mockHeroesService.addHero.and.returnValues(of({id:4,name:name,strength:3}))
+        const inputElement=fixture.debugElement.query(By.css('input')).nativeElement;
+        const addButton=fixture.debugElement.queryAll(By.css('button'))[0];
+
+        inputElement.value=name;
+        addButton.triggerEventHandler('click',null)
+
+        fixture.detectChanges();
+    //    const heroText= fixture.debugElement.query(By.css('ul')).nativeElement.textCotent;
+
+    //     expect(heroText).toContain(name);
+
+    expect(fixture.nativeElement.querySelector('ul').textContent).toContain(name)
+    });
 
 });

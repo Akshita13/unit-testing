@@ -62,24 +62,7 @@ describe('hero service', () => {
         })
 
      
-        it('can test HttpClient.get with matching header', () => {
-            const testData: Hero[] = [{id:1,name: 'Test Data',strength:6}];
-        
-            // Make an HTTP GET request with specific header
-            httpClient.get<Hero[]>(service.heroesUrl, {
-                headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-              })
-              .subscribe(data =>
-                expect(data).toEqual(testData)
-              );
-        
-              // Find request with a predicate function.
-            // Expect one request with an authorization header
-            const req = httpTestingController.expectOne(
-              req => req.headers.has('Authorization')
-            );
-            req.flush(testData);
-          });
+    
 
 
         });
